@@ -12,12 +12,12 @@ class AlgSub{
         this.numNodes = numNodes
         
     }
-    generateSubGroups(){
-        if(this.outDegreeLimit==8){
-            groups = [[0,0,1,1,1,1,1,1],[0,1,0,1,1,1,1,1],[0,1,1,0,1,1,1,1],[0,1,1,1,0,1,1,1],[0,1,1,1,1,0,1,1],[0,1,1,1,1,1,0,1],[0,1,1,1,1,1,1,0],[1,0,0,1,1,1,1,1],[1,0,1,0,1,1,1,1],[1,0,1,1,0,1,1,1],[1,0,1,1,1,0,1,1],[1,0,1,1,1,1,0,1],[1,0,1,1,1,1,1,0],[1,1,0,0,1,1,1,1],[1,1,0,1,0,1,1,1],[1,1,0,1,1,0,1,1],[1,1,0,1,1,1,0,1],[1,1,0,1,1,1,1,0],[1,1,1,0,0,1,1,1],[1,1,1,0,1,0,1,1],[1,1,1,0,1,1,0,1],[1,1,1,0,1,1,1,0],[1,1,1,1,0,0,1,1],[1,1,1,1,0,1,0,1],[1,1,1,1,0,1,1,0],[1,1,1,1,1,0,0,1],[1,1,1,1,1,0,1,0],[1,1,1,1,1,1,0,0]]
+    generateSubGroups(outDegreeLimit){
+        if(outDegreeLimit==8){
+            let groups = [[0,0,1,1,1,1,1,1],[0,1,0,1,1,1,1,1],[0,1,1,0,1,1,1,1],[0,1,1,1,0,1,1,1],[0,1,1,1,1,0,1,1],[0,1,1,1,1,1,0,1],[0,1,1,1,1,1,1,0],[1,0,0,1,1,1,1,1],[1,0,1,0,1,1,1,1],[1,0,1,1,0,1,1,1],[1,0,1,1,1,0,1,1],[1,0,1,1,1,1,0,1],[1,0,1,1,1,1,1,0],[1,1,0,0,1,1,1,1],[1,1,0,1,0,1,1,1],[1,1,0,1,1,0,1,1],[1,1,0,1,1,1,0,1],[1,1,0,1,1,1,1,0],[1,1,1,0,0,1,1,1],[1,1,1,0,1,0,1,1],[1,1,1,0,1,1,0,1],[1,1,1,0,1,1,1,0],[1,1,1,1,0,0,1,1],[1,1,1,1,0,1,0,1],[1,1,1,1,0,1,1,0],[1,1,1,1,1,0,0,1],[1,1,1,1,1,0,1,0],[1,1,1,1,1,1,0,0]]
             return  groups;
         }
-        if(this.outDegreeLimit==6){
+        if(outDegreeLimit==6){
             groups = [[0,0,1,1,1,1],[0,1,0,1,1,1],[0,1,1,0,1,1],[0,1,1,1,0,1],[0,1,1,1,1,0],[1,0,0,1,1,1],[1,0,1,0,1,1],[1,0,1,1,0,1],[1,0,1,1,1,0],[1,1,0,0,1,1],[1,1,0,1,0,1],[1,1,0,1,1,0],[1,1,1,0,0,1],[1,1,1,0,1,0],[1,1,1,1,0,0]]
             return groups;
         }
@@ -128,7 +128,7 @@ class AlgSub{
                     }
                 });
                 let j = 0 ;
-                //record the time recived 
+                //record the time recived of outgoing nodes  
                 outKeys.forEach(function(key){
                     //roundPerformanceTable[i][j][r] = {}
                     
@@ -137,11 +137,12 @@ class AlgSub{
                     
                     let nodeDelay = self.nodeDelay[0][i];
                     let LinkDelay = G._edgeLabels[key].ew;
-                    let sendingDelay = LinkDelay + nodeDelay + BlockReciveTable[i]; 
+                    let sendingDelay = LinkDelay + nodeDelay + BlockReciveTable[i]; //time taken to send a block from node parent to outgoing node.
                     //let rkey = (i.toString()).concat(j.toString).concat(r.toString); 
                     let rkey = i.toString() + j.toString() + r.toString();
+                    //Unusuall event condition
                     if(sendingDelay >= BlockReciveTable[v] ){
-                        
+                        //store the refrenced time of the outgoing node
                         roundPerformanceTable[rkey] = BlockReciveTable[v] + self.nodeDelay[0][v] + G._edgeLabels[key].ew - BlockReciveTable[i];
                     }
                     else{
@@ -152,19 +153,19 @@ class AlgSub{
             }
         }
 
-        let groups = this.generateSubGroups();
+        let groups = this.generateSubGroups(outDegreeLimit);
          
         for(let i = 0 ; i < this.numNodes ; ++i){
             let groupScores = new Array(groups.length).fill(0);
             let selectedGroup = 0;
             let selectedScore = 1000000000;
-            for(let gid = 0 ; j<groups.length;++gid){
+            for(let gid = 0 ; gid<groups.length;++gid){
                 let subgroup = new Array(this.subRounds).fill(this.maxLimit);
                 
-                for(let nid= 0 ; nid<this.outDegreeLimit;++i){
-                    if(groupScores[gid][nid] == 1){
+                for(let nid= 0 ; nid<outDegreeLimit;++nid){
+                    if(groups[gid][nid] == 1){
                             for(let subR = 0 ; subR<this.subRounds;++subR){
-                            let key = i.toString() + nid.toString() + this.subR.toString();
+                            let key = i.toString() + nid.toString() + subR.toString();
                             if(subgroup[subR] > roundPerformanceTable[key] ){
                                 subgroup[subR] = roundPerformanceTable[key]    
                             }
@@ -179,9 +180,9 @@ class AlgSub{
                }
             }
             //computed the nodeset to which a node will connect
-            let selectedNodeSet = new Array(this.outDegreeLimit - 2).fill(0);
+            let selectedNodeSet = new Array(outDegreeLimit - 2).fill(0);
             let s = 0 ;
-            for(let nid = 0 ; nid<this.outDegreeLimit;++nid){
+            for(let nid = 0 ; nid<outDegreeLimit;++nid){
                 if(groups[selectedGroup][nid] == 1){
                     selectedNodeSet[s] = nid;
                     ++s;   
@@ -190,11 +191,11 @@ class AlgSub{
 
             //update neighbours
             
-            
+            this.G._out
 
         }
     }
-
+    
 }
 let [G , delay] = network.callNetwork(1,2,1000,20,8)
 let alg = new AlgSub(G,delay ,10,100,1000)
