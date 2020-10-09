@@ -1,0 +1,16 @@
+{
+  "name": "perigee",
+  "version": "0.1.0",
+  "description": "P2P Simulation",
+  "author": "Wahid Gulzar <bwgate2018@gmail.com>",
+  "main": "network.js",
+  "scripts": {
+    "start": "node network.js"
+  },
+  "dependencies": {
+    "@dagrejs/graphlib": "^2.1.4",
+    "@tensorflow/tfjs": "^2.4.0",
+    "@tensorflow/tfjs-node": "^2.4.0",
+    "graphlib": "^2.1.8"
+  }
+}
