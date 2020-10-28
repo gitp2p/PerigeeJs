@@ -38,9 +38,10 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
     */
    let i = 0;
     for(let node of nodes){
-      G.add(i,node)
+      G.setNode(i,node)
+      ++i
     }
-    
+    return G;
   }
 
 
@@ -108,11 +109,50 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
     return [outgoingNeighbours,incommingNodeLimit]
   }
   //set Graph edges
-  this.setWeightedEdges = function(G,outgoingNeighbours,delay){
-    for(let i = 0 ; i < this.numNodes ; ++i){
-      for(let j = 0 ; j<this.outDegreeLimit;++j){
-        G.setEdge(i, outgoingNeighbours[i][j], {ew:Math.floor(Math.random() * (this.numNodes - 1) ) } );
+  this.setWeightedEdges = function(G,outgoingNeighbours,delay,edgeWeights){
+    let countries = ["AF","AX","AL","DZ","AS","AD","AO","AI","AQ","AG","AR","AM","AW","AU","AT","AZ","BS","BH","BD","BB","BY","BE","BZ","BJ","BM","BT","BO","BA","BW","BV","BR","IO","BN","BG","BF","BI","KH","CM","CA","CV","KY","CF","TD","CL","CN","CX","CC","CO","CW","KM","CG","CD","CK","CR","CI","HR","CU","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ","ER","EE","ET","FK","FO","FJ","FI","FR","GF","PF","TF","GA","GM","GE","DE","GH","GI","GR","GL","GD","GP","GU","GT","GG","GN","GW","GY","HT","HM","VA","HN","HK","HU","IS","IN","ID","IR","IQ","IE","IM","IL","IT","JM","JP","JE","JO","KZ","KE","KI","KP","KR","KW","KG","LA","LV","LB","LS","LR","LY","LI","LT","LU","MO","MK","MG","MW","MY","MV","ML","MT","MH","MQ","MR","MU","YT","MX","FM","MD","MC","MN","ME","MS","MA","MZ","MM","NA","NR","NP","NL","AN","NC","NZ","NI","NE","NG","NU","NF","MP","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PN","PL","PT","PR","QA","RE","RO","RU","RW","SH","KN","LC","PM","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SK","SI","SB","SO","ZA","GS","ES","LK","SD","SR","SJ","SZ","SE","CH","SY","TW","TJ","TZ","TH","TL","TG","TK","TO","TT","TN","TR","TM","TC","TV","UG","UA","AE","GB","US","UM","UY","UZ","VU","VE","VN","VG","VI","WF","EH","YE","ZM","ZW"]
+    let notEdges = 0;
 
+    for(let i = 0 ; i < this.numNodes ; ++i){
+      let v = G.node(i.toString())
+      for(let j = 0 ; j<this.outDegreeLimit;++j){
+        // Get the label for node b g.node("b");
+        let u = G.node(outgoingNeighbours[i][j].toString())
+        // key is the country-country .   edgeWeights[key] contains the array of weights 
+        let key = `${v}-${u}`
+        
+        try{
+          let weights = edgeWeights[key]
+          let randWeight = weights[Math.floor(Math.random() * weights.length)] 
+          G.setEdge(i, outgoingNeighbours[i][j], {ew:randWeight} );
+          
+        }
+        catch{
+          let countries1 = [...countries]
+          while(true){
+            
+            let vnew = countries1[Math.floor(Math.random() * countries1.length)]
+            const index = countries1.indexOf(vnew);
+            if (index > -1) {
+              countries1.splice(index, 1);
+            }
+            let key = `${v}-${vnew.toLowerCase()}`
+            let key1 = `${vnew.toLowerCase()}-${v}`
+            if(edgeWeights[key]){
+              let weights = edgeWeights[key]
+              let randWeight = weights[Math.floor(Math.random() * weights.length)] 
+              G.setEdge(i, outgoingNeighbours[i][j], {ew:randWeight} );
+              break;
+            }
+            if(edgeWeights[key1]){
+              let weights = edgeWeights[key1]
+              let randWeight = weights[Math.floor(Math.random() * weights.length)] 
+              G.setEdge(i, outgoingNeighbours[i][j], {ew:randWeight} );
+              break;
+            }
+            
+          }
+        }
       }
     }
     let a = G._in
@@ -140,12 +180,15 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
       
     }
     // store the nodes that are present in DelayJson file
+    // Proper nodes has the nodes that are present in DelayJson file
     let properNodes = new Array()
     for(let node of validNodes){
       if(validKeys.has(node)){
         properNodes.push(node)
       }
     }
+
+
     //get a unifom sample of 1000 nodes
     let sampledNodes = this.getRandomSample(properNodes ,1000)
     let nodesEdgeWeights = {}
@@ -166,7 +209,7 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
       }
     }
    
-    return nodesEdgeWeights , sampledNodes
+    return [nodesEdgeWeights , sampledNodes]
   }
   this.getRandomSample = function getRandomSubarray(arr, size) {
     var shuffled = arr.slice(0), i = arr.length, temp, index;
@@ -182,8 +225,16 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
   
 }
 obj = new Network(1,1,1000,20,8)
-let nodesEdges , nodes = obj.nodesAndEdgeWeights()
+//nodesAndEdgeWeights returns sample 1000 nodes and the country-country weights 
+let nodesInfo = obj.nodesAndEdgeWeights()
+let nodesEdges = nodesInfo[0] ;
+let nodes    = nodesInfo[1]
 G = obj.setNodesofGraph(nodes)
+const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
+let delay = obj.setNodeDelay()
+obj.setWeightedEdges(G,outgoingNeighbours,delay,nodesEdges)
+
+
 
 function callNetwork(filedelay , networkType,numNodes,indegreeLimit,outDegree){
 obj = new Network(filedelay , networkType,numNodes,indegreeLimit,outDegree)
@@ -193,9 +244,7 @@ G = obj.setNodesofGraph(nodes)
 //obj.setNodesofGraph("data1.json")
 const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
 let delay = obj.setNodeDelay()
-let edgeDelay = this.generateWeight()
-
-G = obj.setWeightedEdges(G,outgoingNeighbours,delay)
+G = obj.setWeightedEdges(G,outgoingNeighbours,delay,nodesEdges)
 return [G , delay] ;
 }
 
