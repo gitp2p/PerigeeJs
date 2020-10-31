@@ -12,7 +12,7 @@
                 "${workspaceFolder}/node_modules/**/*.js",
                 "!${workspaceFolder}/node_modules/math/**/*.js"
             ],
-            "program": "${workspaceFolder}\\src\\subsetAlgiritm.js"
+            "program": "${workspaceFolder}\\src\\network.js"
         }
     ]
 }

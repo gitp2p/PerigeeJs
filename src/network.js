@@ -46,7 +46,7 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
 
 
   this.setNodeDelay = function(){
-    return new Array(tf.randomNormal([this.numNodes],100,10).dataSync() ) 
+    return new Array(tf.randomNormal([this.numNodes],20,5).dataSync() ) 
   }
 
   this.Nodebandwith = function(){
@@ -222,17 +222,68 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
     return shuffled.slice(0, size);
   }
 
+  this.WeigthedMatrix = function getWeightedMatrix(nodes , edgeWeights){
+    let countries = ["AF","AX","AL","DZ","AS","AD","AO","AI","AQ","AG","AR","AM","AW","AU","AT","AZ","BS","BH","BD","BB","BY","BE","BZ","BJ","BM","BT","BO","BA","BW","BV","BR","IO","BN","BG","BF","BI","KH","CM","CA","CV","KY","CF","TD","CL","CN","CX","CC","CO","CW","KM","CG","CD","CK","CR","CI","HR","CU","CY","CZ","DK","DJ","DM","DO","EC","EG","SV","GQ","ER","EE","ET","FK","FO","FJ","FI","FR","GF","PF","TF","GA","GM","GE","DE","GH","GI","GR","GL","GD","GP","GU","GT","GG","GN","GW","GY","HT","HM","VA","HN","HK","HU","IS","IN","ID","IR","IQ","IE","IM","IL","IT","JM","JP","JE","JO","KZ","KE","KI","KP","KR","KW","KG","LA","LV","LB","LS","LR","LY","LI","LT","LU","MO","MK","MG","MW","MY","MV","ML","MT","MH","MQ","MR","MU","YT","MX","FM","MD","MC","MN","ME","MS","MA","MZ","MM","NA","NR","NP","NL","AN","NC","NZ","NI","NE","NG","NU","NF","MP","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PN","PL","PT","PR","QA","RE","RO","RU","RW","SH","KN","LC","PM","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SK","SI","SB","SO","ZA","GS","ES","LK","SD","SR","SJ","SZ","SE","CH","SY","TW","TJ","TZ","TH","TL","TG","TK","TO","TT","TN","TR","TM","TC","TV","UG","UA","AE","GB","US","UM","UY","UZ","VU","VE","VN","VG","VI","WF","EH","YE","ZM","ZW"]
+    
+    let weightArray = new Array(nodes.length).fill(0);
+    let i = 0;
+    for(let n1 of nodes){
+      weightArray[i] = new Array(nodes.length).fill(0);
+      let j = 0;
+      for(let n2 of nodes){
+        let key = `${n1} - ${n2}`;
+        try{
+          let weights = edgeWeights[key]
+          let randWeight = weights[Math.floor(Math.random() * weights.length)]
+          weightArray[i][j] = randWeight;
+        }
+        catch{
+          let countries1 = [...countries]
+          while(true){
+            
+            let vnew = countries1[Math.floor(Math.random() * countries1.length)]
+            const index = countries1.indexOf(vnew);
+            if (index > -1) {
+              countries1.splice(index, 1);
+            }
+            let key = `${n1}-${vnew.toLowerCase()}`
+            let key1 = `${vnew.toLowerCase()}-${n1}`
+            if(edgeWeights[key]){
+              let weights = edgeWeights[key]
+              let randWeight = weights[Math.floor(Math.random() * weights.length)] 
+              weightArray[i][j] = randWeight;
+              break;
+            }
+            if(edgeWeights[key1]){
+              let weights = edgeWeights[key1]
+              let randWeight = weights[Math.floor(Math.random() * weights.length)] 
+              weightArray[i][j] = randWeight;
+              break;
+            }
+            
+          }
+        }
+        ++j;
+      }
+      ++i;
+    }
+
+    return weightArray
+  }
+
   
 }
-obj = new Network(1,1,1000,20,8)
-//nodesAndEdgeWeights returns sample 1000 nodes and the country-country weights 
-let nodesInfo = obj.nodesAndEdgeWeights()
-let nodesEdges = nodesInfo[0] ;
-let nodes    = nodesInfo[1]
-G = obj.setNodesofGraph(nodes)
-const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
-let delay = obj.setNodeDelay()
-obj.setWeightedEdges(G,outgoingNeighbours,delay,nodesEdges)
+//Test purpose
+ obj = new Network(1,1,1000,20,8)
+// //nodesAndEdgeWeights returns sample 1000 nodes and the country-country weights 
+ let nodesInfo = obj.nodesAndEdgeWeights()
+ let nodesEdges = nodesInfo[0] ;
+ let nodes    = nodesInfo[1]
+ G = obj.setNodesofGraph(nodes)
+ const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
+ let delay = obj.setNodeDelay()
+ let weightArray = obj.WeigthedMatrix(nodes,nodesEdges); 
+ obj.setWeightedEdges(G,outgoingNeighbours,delay,nodesEdges)
 
 
 

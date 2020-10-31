@@ -35,7 +35,7 @@ class AlgSub{
         for(let out of OutNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][out.w]; // node delay of its neighbour
             let LinkDelay = this.G.edge(out.v,out.w).ew; // edge weight between v , w
-            let recievingDelay = LinkDelay + nodeDelay + broadcastTime[out.w]; //time taken to recive from its neigbour
+            let recievingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[out.w]); //time taken to recive from its neigbour
             
             if(recievingDelay < broadcastTime[broadCastNode] ){
                 broadcastTime[broadCastNode]  = recievingDelay; // update its broadcasting delay   
@@ -45,9 +45,9 @@ class AlgSub{
         for(let innodes of inNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][innodes.v];
             let LinkDelay = this.G.edge(innodes.v,innodes.w).ew;
-            let recievingDelay = LinkDelay + nodeDelay + broadcastTime[innodes.v];
+            let recievingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[innodes.v]);
         
-            if(recievingDelay < broadcastTime[broadCastNode] ){
+            if(recievingDelay < Number(broadcastTime[broadCastNode]) ){
                 broadcastTime[broadCastNode]  = recievingDelay;   
             }
         }
@@ -56,9 +56,9 @@ class AlgSub{
         for(let out of OutNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][out.v]; // node delay of its broadcasting node
             let LinkDelay = this.G.edge(out.v,out.w).ew; // edge weight between v , w
-            let sendingDelay = LinkDelay + nodeDelay + broadcastTime[broadCastNode]; //time taken to broadcast to its neigbour
-            
-            if(sendingDelay < broadcastTime[out.w] ){
+            let sendingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[broadCastNode]); //time taken to broadcast to its neigbour
+            let test = broadcastTime[broadCastNode]
+            if(sendingDelay < Number(broadcastTime[out.w]) ){
                 willBroadcastNodes[i++] = out.w ;
                 broadcastTime[out.w]  = sendingDelay; // update its broadcasting delay   
             }
@@ -67,9 +67,9 @@ class AlgSub{
         for(let innodes of inNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][broadCastNode];
             let LinkDelay = this.G.edge(innodes.v,innodes.w).ew;
-            let sendingDelay = LinkDelay + nodeDelay + broadcastTime[broadCastNode];
+            let sendingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[broadCastNode]);
             
-            if(sendingDelay < broadcastTime[innodes.v] ){
+            if(sendingDelay < Number(broadcastTime[innodes.v]) ){
                 willBroadcastNodes[i++] = innodes.v ;
                 broadcastTime[innodes.v]  = sendingDelay;   
             }
@@ -181,7 +181,7 @@ class AlgSub{
                     
                     let nodeDelay = self.nodeDelay[0][v];
                     let LinkDelay = G._edgeLabels[key].ew;
-                    let recievingDelay = LinkDelay + nodeDelay + BlockReciveTable[v]; 
+                    let recievingDelay = Number(LinkDelay) + nodeDelay + Number(BlockReciveTable[v]); 
                     
                     if(recievingDelay < BlockReciveTable[i] ){
                         BlockReciveTable[i]  = recievingDelay;   
@@ -197,13 +197,13 @@ class AlgSub{
                     
                     let nodeDelay = self.nodeDelay[0][i];
                     let LinkDelay = G._edgeLabels[key].ew;
-                    let sendingDelay = LinkDelay + nodeDelay + BlockReciveTable[i]; //time taken to send a block from node parent to outgoing node.
+                    let sendingDelay = Number(LinkDelay) + nodeDelay + Number(BlockReciveTable[i]); //time taken to send a block from node parent to outgoing node.
                     //let rkey = (i.toString()).concat(j.toString).concat(r.toString); 
                     let rkey = i.toString() + j.toString() + r.toString();
                     //Unusuall event condition
                     if(sendingDelay >= BlockReciveTable[v] ){
                         //store the refrenced time of the outgoing node
-                        roundPerformanceTable[rkey] = BlockReciveTable[v] + self.nodeDelay[0][v] + G._edgeLabels[key].ew - BlockReciveTable[i];
+                        roundPerformanceTable[rkey] = Number(BlockReciveTable[v]) + Number(self.nodeDelay[0][v]) + Number(G._edgeLabels[key].ew) - Number(BlockReciveTable[i]);
                     }
                     else{
                         roundPerformanceTable[rkey] = self.maxLimit;
@@ -224,7 +224,7 @@ class AlgSub{
                 
                 for(let nid= 0 ; nid<outDegreeLimit;++nid){
                     if(groups[gid][nid] == 1){
-                            for(let subR = 0 ; subR<this.subRounds;++subR){
+                        for(let subR = 0 ; subR<this.subRounds;++subR){
                             let key = i.toString() + nid.toString() + subR.toString();
                             if(subgroup[subR] > roundPerformanceTable[key] ){
                                 subgroup[subR] = roundPerformanceTable[key]    
@@ -250,18 +250,19 @@ class AlgSub{
             }
 
             //update neighbours
-            
             let randomNodes = [0,1,2,3,4,5,6,7].filter(value=>!selectedNodeSet.includes(value)) //not needed 
             let selectedOutNodeSet = new Array(outDegreeLimit-2)
             let outId = 0; // used to indice arrays 
             let outEdgeWeight = new Array(outDegreeLimit - 2)
             let outed = this.G.outEdges(i)
             for(const outNode of selectedNodeSet){
+                //outEdge() Which edges leave node "a"?
+                //store the outgoing neighbours of I to which connection remains
                 selectedOutNodeSet[outId] = this.G.outEdges(i)[outNode].w
+                //store the edgeweight of corresponding edges
                 outEdgeWeight[outId] = this.G.edge(i,selectedOutNodeSet[outId])
                 outId++;
             }
-
             let nodeData = this.G.node(i)
             //remove the node and incomming edges , out going edges 
             let  inEdges = this.G.inEdges(i)
@@ -294,8 +295,8 @@ class AlgSub{
     }
 
     setRandomConnections(node){
-       
-        let randNode = Math.floor(Math.random() * (this.numNodes - 1));
+       // random is never 1 
+        let randNode = Math.floor(Math.random() * this.numNodes);
         let flag = false
         let flag1 = false; // flags for  the conditions
         let flag2 = false;
@@ -303,6 +304,7 @@ class AlgSub{
         while(true){
             let inLimit = this.G.inEdges(randNode).length 
             if(flag==true){
+                let edgeWeight = 
                 this.G.setEdge(node , randNode, {ew:Math.floor(Math.random() * (this.numNodes - 1) ) }  )
                 break;
             }

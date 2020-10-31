@@ -11,6 +11,8 @@
     "@dagrejs/graphlib": "^2.1.4",
     "@tensorflow/tfjs": "^2.4.0",
     "@tensorflow/tfjs-node": "^2.4.0",
-    "graphlib": "^2.1.8"
+    "fetch": "^1.1.0",
+    "graphlib": "^2.1.8",
+    "node-fetch": "^2.6.1"
   }
 }
