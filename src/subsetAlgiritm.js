@@ -1,17 +1,18 @@
 const { SR } = require('../Data/data');
 var network = require('./network')
-
+var Graph = require("graphlib");
+const fs = require('fs');
 class AlgSub{
-    constructor(G,nodeDelay,rounds, subRounds,numNodes,outDegreeLimit) {
+    constructor(G,nodeDelay,weightArray,rounds, subRounds,numNodes,outDegreeLimit) {
         this.G = G;
-        this.nodeDelay  = nodeDelay
+        this.nodeDelay  = nodeDelay;
+        this.weightArray = weightArray;
         this.rounds = rounds;
         this.subRounds = subRounds;
         this.maxLimit = 10000;
         this.maxPathDelay = 10000;
-        this.numNodes = numNodes
-        this.outDegreeLimit = outDegreeLimit
-        
+        this.numNodes = numNodes;
+        this.outDegreeLimit = outDegreeLimit;        
     }
     generateSubGroups(outDegreeLimit){
         if(outDegreeLimit==8){
@@ -34,7 +35,7 @@ class AlgSub{
         //Hear from its outgoing neighbours.
         for(let out of OutNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][out.w]; // node delay of its neighbour
-            let LinkDelay = this.G.edge(out.v,out.w).ew; // edge weight between v , w
+            let LinkDelay = this.G.edge(out.v,out.w); // edge weight between v , w
             let recievingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[out.w]); //time taken to recive from its neigbour
             
             if(recievingDelay < broadcastTime[broadCastNode] ){
@@ -44,7 +45,7 @@ class AlgSub{
         //Hear from its incoming  neighbours.
         for(let innodes of inNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][innodes.v];
-            let LinkDelay = this.G.edge(innodes.v,innodes.w).ew;
+            let LinkDelay = this.G.edge(innodes.v,innodes.w);
             let recievingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[innodes.v]);
         
             if(recievingDelay < Number(broadcastTime[broadCastNode]) ){
@@ -55,7 +56,7 @@ class AlgSub{
         //update will broadcast for outgoing neighbors
         for(let out of OutNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][out.v]; // node delay of its broadcasting node
-            let LinkDelay = this.G.edge(out.v,out.w).ew; // edge weight between v , w
+            let LinkDelay = this.G.edge(out.v,out.w); // edge weight between v , w
             let sendingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[broadCastNode]); //time taken to broadcast to its neigbour
             let test = broadcastTime[broadCastNode]
             if(sendingDelay < Number(broadcastTime[out.w]) ){
@@ -66,7 +67,7 @@ class AlgSub{
         //update will broadcast for incooming neighbors
         for(let innodes of inNodesOFBrodcastNode){
             let nodeDelay = this.nodeDelay[0][broadCastNode];
-            let LinkDelay = this.G.edge(innodes.v,innodes.w).ew;
+            let LinkDelay = this.G.edge(innodes.v,innodes.w);
             let sendingDelay = Number(LinkDelay) + nodeDelay + Number(broadcastTime[broadCastNode]);
             
             if(sendingDelay < Number(broadcastTime[innodes.v]) ){
@@ -106,7 +107,7 @@ class AlgSub{
         }
         
         let nodeDelay = self.nodeDelay[0][v];
-        let LinkDelay = self.G._edgeLabels[key].ew;
+        let LinkDelay = self.G._edgeLabels[key];
         let recievingDelay = LinkDelay + nodeDelay + broadcastTime[v]; 
         
         if(recievingDelay < broadcastTime[broadCastNode] ){
@@ -127,7 +128,7 @@ class AlgSub{
         }
         
         let nodeDelay = self.nodeDelay[0][broadCastNode];
-        let LinkDelay = self.G._edgeLabels[key].ew;
+        let LinkDelay = self.G._edgeLabels[key];
         let sendingDelay = LinkDelay + nodeDelay + broadcastTime[broadCastNode]; 
         
         if(sendingDelay< broadcastTime[v] ){
@@ -180,7 +181,7 @@ class AlgSub{
                     }
                     
                     let nodeDelay = self.nodeDelay[0][v];
-                    let LinkDelay = G._edgeLabels[key].ew;
+                    let LinkDelay = self.G._edgeLabels[key];
                     let recievingDelay = Number(LinkDelay) + nodeDelay + Number(BlockReciveTable[v]); 
                     
                     if(recievingDelay < BlockReciveTable[i] ){
@@ -188,6 +189,7 @@ class AlgSub{
                     }
                 });
                 let j = 0 ;
+                
                 //record the time recived of outgoing nodes  
                 outKeys.forEach(function(key){
                     //roundPerformanceTable[i][j][r] = {}
@@ -196,14 +198,14 @@ class AlgSub{
                     v = OutNodesOFBrodcastNode[key].w;
                     
                     let nodeDelay = self.nodeDelay[0][i];
-                    let LinkDelay = G._edgeLabels[key].ew;
+                    let LinkDelay = self.G._edgeLabels[key];
                     let sendingDelay = Number(LinkDelay) + nodeDelay + Number(BlockReciveTable[i]); //time taken to send a block from node parent to outgoing node.
                     //let rkey = (i.toString()).concat(j.toString).concat(r.toString); 
                     let rkey = i.toString() + j.toString() + r.toString();
                     //Unusuall event condition
                     if(sendingDelay >= BlockReciveTable[v] ){
                         //store the refrenced time of the outgoing node
-                        roundPerformanceTable[rkey] = Number(BlockReciveTable[v]) + Number(self.nodeDelay[0][v]) + Number(G._edgeLabels[key].ew) - Number(BlockReciveTable[i]);
+                        roundPerformanceTable[rkey] = Number(BlockReciveTable[v]) + Number(self.nodeDelay[0][v]) + Number(self.G._edgeLabels[key]) - Number(BlockReciveTable[i]);
                     }
                     else{
                         roundPerformanceTable[rkey] = self.maxLimit;
@@ -278,12 +280,12 @@ class AlgSub{
             //add  the edges back  and add the proper weight i.e figure it out later to add original weights
             outId = 0;
             for(const out of selectedOutNodeSet){
-                G.setEdge(i, out, outEdgeWeight[outId++] );
+                this.G.setEdge(i, out, outEdgeWeight[outId++] );
             }
             outId = 0;
             //add the incomming edges back to node i and add original weight back;
             for(let inn = 0 ; inn<inEdges.length;++inn){
-                G.setEdge(inEdges[inn].v, i, inEdgeWeight[inn] );
+                this.G.setEdge(inEdges[inn].v, i, inEdgeWeight[inn] );
             }
 
             //Add the random edges
@@ -304,8 +306,7 @@ class AlgSub{
         while(true){
             let inLimit = this.G.inEdges(randNode).length 
             if(flag==true){
-                let edgeWeight = 
-                this.G.setEdge(node , randNode, {ew:Math.floor(Math.random() * (this.numNodes - 1) ) }  )
+                this.G.setEdge(node , randNode, this.weightArray[node][randNode]   )
                 break;
             }
           
@@ -337,30 +338,41 @@ class AlgSub{
     }
     
 }
-let [G , delay] = network.callNetwork(1,2,1000,20,8)
-for(let i = 0 ; i<100 ; i++){
-let alg = new AlgSub(G,delay,10,10,1000,8)
+let [G , delay , weightArray] = network.callNetwork(1,2,200,20,8)
+let rounds = [0,4,8,16,32,64,128,256,384,512]
+for(let i = 0 ; i<=32 ; i++){
+    
+    if(rounds.includes(i)){
+        let graphJson = Graph.json.write(G);
+        let  graphName = `../Data/Graph/GraphFromRound${i}.json`
+        fs.writeFile(graphName, JSON.stringify(graphJson), (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log("JSON data is saved.");
+        });
+        let check = G.edge(0,1);
+        function weight(e) { 
+            let i = Number(e.v)
+            let j = Number(e.w)
+            return Number(weightArray[i][j]);
+            
+        }
+        let allPairShortesPAths = Graph.alg.dijkstraAll(G,weight );
+        let  graphNameShortest = `../Data/ShortesPath/ShortestPathOfRound${i}.json`
+        //let allPairShortesPAthsJSON = JSON.parse(allPairShortesPAths);
+        fs.writeFile(graphNameShortest, JSON.stringify(allPairShortesPAths), (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log("JSON data is saved.");
+        });
+    }
+    let alg = new AlgSub(G,delay,weightArray,10,10,200,8)
 
-
-let outE = G.edges()
-let sumOut  = 0;
-for(o of outE){
-    let w = G.edge(o.v,o.w).ew
-    sumOut+=w;
+    alg.algSub(null,8,null);    
 }
 
-alg.algSub(null,8,null);
-let vw = G.edge(G.outEdges(0)[0].v ,G.outEdges(0)[0].w)
-
-let inE = G.edges()
-let sumIn  = 0;
-for(o of inE){
-    let w = G.edge(o.v,o.w).ew
-    sumIn+=w;
-}
-let diff = sumOut - sumIn
-console.log(diff)
-}
 /*
  G.edge(v,w) gives the weight of the edges v,w
 
