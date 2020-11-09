@@ -338,37 +338,57 @@ class AlgSub{
     }
     
 }
-let [G , delay , weightArray] = network.callNetwork(1,2,200,20,8)
+let nodes  = 1000
+let [G , delay , weightArray] = network.callNetwork(1,2,nodes,20,8)
 let rounds = [0,4,8,16,32,64,128,256,384,512]
-for(let i = 0 ; i<=32 ; i++){
-    
+for(let i = 0 ; i<=128 ; i++){
+    console.log(`running the round ${i}\n`)
     if(rounds.includes(i)){
         let graphJson = Graph.json.write(G);
-        let  graphName = `../Data/Graph/GraphFromRound${i}.json`
+        let  graphName = `../../PerigeeJSHistoricalData/Data/GraphSUB1/GraphFromRound${i}.json`
         fs.writeFile(graphName, JSON.stringify(graphJson), (err) => {
             if (err) {
                 throw err;
             }
             console.log("JSON data is saved.");
         });
-        let check = G.edge(0,1);
+
+        let Gnew = Graph.json.read(graphJson)
+        for(let node = 0 ; node<nodes; ++node){
+            let inList = Gnew.inEdges(node)
+            for(let edge of inList){
+                //console.log(edge)
+                Gnew.setEdge(edge.w,edge.v)
+            }
+            
+        }
+        
         function weight(e) { 
             let i = Number(e.v)
             let j = Number(e.w)
-            return Number(weightArray[i][j]);
-            
+            let nodeWeight1 = Number(delay[0][i])/2
+            let nodeWeight2 = Number(delay[0][j])/2
+            return Number(Number(weightArray[i][j]) + nodeWeight1 + nodeWeight2);  
         }
-        let allPairShortesPAths = Graph.alg.dijkstraAll(G,weight );
-        let  graphNameShortest = `../Data/ShortesPath/ShortestPathOfRound${i}.json`
-        //let allPairShortesPAthsJSON = JSON.parse(allPairShortesPAths);
-        fs.writeFile(graphNameShortest, JSON.stringify(allPairShortesPAths), (err) => {
+        let allPairShortesPAths = Graph.alg.dijkstraAll(Gnew,weight );
+        let  graphNameShortest = `../../PerigeeJSHistoricalData/Data/SUBSShortestPath1/hash_subsetV1Round${i}.txt`
+        let distances = '';
+        for(let i = 0 ;i<nodes;++i){
+            
+            for(let j =0 ; j<nodes;++j){
+                let tem = allPairShortesPAths[i][j]["distance"];
+                distances = distances.concat(`${allPairShortesPAths[i][j]["distance"]}  `)
+            }
+            distances = distances.concat("\n")
+        }
+        fs.writeFile(graphNameShortest, distances, (err) => {
             if (err) {
                 throw err;
             }
             console.log("JSON data is saved.");
         });
-    }
-    let alg = new AlgSub(G,delay,weightArray,10,10,200,8)
+    }                                      //r nodes sub out
+    let alg = new AlgSub(G,delay,weightArray,10,100,nodes,8)
 
     alg.algSub(null,8,null);    
 }

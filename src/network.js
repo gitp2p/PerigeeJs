@@ -46,7 +46,7 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
 
 
   this.setNodeDelay = function(){
-    return new Array(tf.randomGamma([this.numNodes],1,1).dataSync() ) 
+    return new Array(tf.randomNormal([this.numNodes],50,4.5).dataSync() ) 
   }
 
   this.Nodebandwith = function(){
