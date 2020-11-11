@@ -1,4 +1,4 @@
-const { SR } = require('../Data/data');
+
 var network = require('./mynetwork')
 var Graph = require("graphlib");
 var Gn    = require("graphlib");
@@ -98,7 +98,7 @@ class AlgSub{
             if(broadCastNode >999){
                 console.log(broadCastNode);
             }
-            //broadCastNode = r; //remove it from here
+            broadCastNode = r; //remove it from here
             let BlockReciveTable = new Array(this.numNodes).fill(this.maxPathDelay);
             BlockReciveTable[broadCastNode] = 0 ;
 
@@ -142,7 +142,7 @@ class AlgSub{
         let groups = this.generateSubGroups(this.outDegreeLimit);
          
         for(let i = 0 ; i < this.numNodes ; ++i){
-            let groupScores = new Array(groups.length).fill(999999);
+            let groupScores = new Array(groups.length).fill(0);
             let selectedGroup = 0;
             let selectedScore = 1000001;
             for(let gid = 0 ; gid<groups.length;++gid){
@@ -181,29 +181,28 @@ class AlgSub{
             let randomNodes = [0,1,2,3,4,5,6,7].filter(value=>!selectedNodeSet.includes(value))
             let nodesToConnect = new Array(2);
              
-            //set the selected edges to the new graph 
-            for(let j = 0; j<selectedNodeSet.length;j++){
-                let edges = this.G.outEdges(i); 
-                for(let edge of edges){
-                    let edgeWeight = this.G.edge(edge)
-                    if(this.G.edge(edge).index == selectedNodeSet[j]){
-                        GraphRet.setEdge(edge,edgeWeight);
-                        break;
-                    }
-                }  
-            }
             // find the two other nodes other than  the one to be removed;
             for(let j = 0 ; j<2; ++j){ 
                 nodesToConnect[j] = this.setRandomConnections(i)
                 //increase Incomming limit of the nodesToConnect
                 this.G.setEdge(i,nodesToConnect[j],{"index":-1});
             }
-
+            //set the selected edges to the new graph 
+            for(let j = 0; j<selectedNodeSet.length;j++){
+                let edges = this.G.outEdges(i); 
+                for(let edge of edges){
+                    let edgeWeight = this.G.edge(edge)
+                    if(this.G.edge(edge).index == selectedNodeSet[j]){
+                        GraphRet.setEdge(edge,{"weight":edgeWeight.weight,"index":j});
+                        break;
+                    }
+                }  
+            }
             // add the random edges to new graph and let our previous remian unchanged.
+            let ind = 6;
             for(let j = 0 ; j<2;++j){
-                
-                GraphRet.setEdge(i , nodesToConnect[j], {"weight":this.weightArray[i][nodesToConnect[j]] , "index":randomNodes[j]}  )   
-      
+
+                GraphRet.setEdge(i , nodesToConnect[j], {"weight":this.weightArray[i][nodesToConnect[j]] , "index":ind++}  )   
             }         
             
         }
@@ -259,15 +258,15 @@ class AlgSub{
     }
     
 }
-let nodes  = 1000
+let nodes  = 200
 let [G , delay , weightArray , Gnodes] = network.callNetwork(1,2,nodes,20,8)
 let rounds = [0,4,8,16,32,64,128,256,384,512]
-for(let i = 0 ; i<=64 ; i++){
+for(let i = 0 ; i<=128 ; i++){
     
     console.log(`running the round ${i}\n`)
     if(rounds.includes(i)){
         let graphJson = Graph.json.write(G);
-        let  graphName = `../../PerigeeJSHistoricalData/Data/GraphSUB1/GraphFromRound${i}.json`
+        let  graphName = `../../PerigeeJSHistoricalData/Data/GraphUCB/UCBGraphFromRound${i}.json`
         fs.writeFile(graphName, JSON.stringify(graphJson), (err) => {
             if (err) {
                 throw err;
@@ -280,22 +279,20 @@ for(let i = 0 ; i<=64 ; i++){
             let inList = Gnew.inEdges(node)
             for(let edge of inList){
                 //console.log(edge)
-                Gnew.setEdge(edge.w,edge.v,{"weight":weightArray[edge.w][edge.w] , "index":-1})
+                Gnew.setEdge(edge.w,edge.v)
             }
             
         }
-        
         function weight(e) { 
             let i = Number(e.v)
             let j = Number(e.w)
             let nodeWeight1 = Number(delay[0][i])/2
             let nodeWeight2 = Number(delay[0][j])/2
-            return Number(Number(weightArray[i][j]) + Number(nodeWeight1) + Number(nodeWeight2) );  
+            return Number(Number(weightArray[i][j]) + nodeWeight1 + nodeWeight2);  
         }
         let allPairShortesPAths = Graph.alg.dijkstraAll(Gnew,weight );
-        //let  graphNameShortest = `../../PerigeeJSHistoricalData/Data/SUBSShortestPath1/hash_subsetV1Round${i}.txt`
         let  graphNameShortest = `../hash_subsetV1Round${i}.txt`
-        
+        //let allPairShortesPAthsJSON = JSON.parse(allPairShortesPAths);
         let distances = '';
         for(let i = 0 ;i<nodes;++i){
             
@@ -311,7 +308,7 @@ for(let i = 0 ; i<=64 ; i++){
             }
             console.log("JSON data is saved.");
         });
-    }  
+    }
     //delay[0] = new Array(nodes).fill(0)                                      //r nodes sub out
     let GraphRet = new Gn.Graph();
     let graphNodes = G.nodes();

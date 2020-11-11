@@ -178,7 +178,7 @@ class AlgUCB{
         }
         return historyTable
     }
-
+    // update after round need to change this.
     setRandomConnections(node,index){
         // random is never 1 
          let randNode =  Math.floor(Math.random() * (this.numNodes - 1) )
