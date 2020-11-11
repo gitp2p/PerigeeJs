@@ -1,5 +1,5 @@
 const { SR } = require('../Data/data');
-var network = require('./network')
+var network = require('./mynetwork')
 var Graph = require("graphlib");
 const fs = require('fs');
 class AlgSub{
@@ -143,7 +143,7 @@ class AlgSub{
            }
        }
     }
-    algSub(outgoingNeigbours,outDegreeLimit , SubGroups){
+    algSub(outDegreeLimit){
         
         let roundPerformanceTable = {}
 
@@ -167,7 +167,7 @@ class AlgSub{
                 let inKeys  = Object.keys(G._in[i]);
                 let keys = outKeys.concat(inKeys);
                 let outLen = outKeys.length;
-                let inLen = inKeys.length;
+                
                 let self = this;
                 keys.forEach(function(key){
                     
@@ -188,6 +188,12 @@ class AlgSub{
                         BlockReciveTable[i]  = recievingDelay;   
                     }
                 });
+            }
+            for(let i = 0 ; i< this.numNodes;++i){
+                //roundPerformanceTable[i][r] = {}
+                let OutNodesOFBrodcastNode = G._out[i];
+                let outKeys = Object.keys(G._out[i]);
+                let self = this;
                 let j = 0 ;
                 
                 //record the time recived of outgoing nodes  
@@ -345,7 +351,7 @@ for(let i = 0 ; i<=128 ; i++){
     console.log(`running the round ${i}\n`)
     if(rounds.includes(i)){
         let graphJson = Graph.json.write(G);
-        let  graphName = `../../PerigeeJSHistoricalData/Data/GraphSUB1/GraphFromRound${i}.json`
+        let  graphName = `../../PerigeeJSHistoricalData/Data/GraphSUB1/100GraphFromRound${i}.json`
         fs.writeFile(graphName, JSON.stringify(graphJson), (err) => {
             if (err) {
                 throw err;
@@ -368,7 +374,7 @@ for(let i = 0 ; i<=128 ; i++){
             let j = Number(e.w)
             let nodeWeight1 = Number(delay[0][i])/2
             let nodeWeight2 = Number(delay[0][j])/2
-            return Number(Number(weightArray[i][j]) + nodeWeight1 + nodeWeight2);  
+            return Number(Number(weightArray[i][j]) + Number(nodeWeight1) + Number(nodeWeight2) );  
         }
         let allPairShortesPAths = Graph.alg.dijkstraAll(Gnew,weight );
         let  graphNameShortest = `../../PerigeeJSHistoricalData/Data/SUBSShortestPath1/hash_subsetV1Round${i}.txt`
@@ -390,7 +396,7 @@ for(let i = 0 ; i<=128 ; i++){
     }                                      //r nodes sub out
     let alg = new AlgSub(G,delay,weightArray,10,100,nodes,8)
 
-    alg.algSub(null,8,null);    
+    alg.algSub(8);    
 }
 
 /*
