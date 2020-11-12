@@ -122,7 +122,7 @@ class AlgUCB{
                         historyTable[key] = new Array();
                     }
                     historyTable[key].push( roundPerformanceTable[`${key}${r}`]);
-                    historyTable[key].sort(); 
+                    historyTable[key].sort(function(a, b){return Number(a) - Number(b)});
                     let len = historyTable[key].length
                     let value = historyTable[key][Math.floor(this.delayPercentage*len)];
                     let bound = this.c*Math.sqrt(Math.log(this.subRounds)/(2*len) );
@@ -209,7 +209,7 @@ class AlgUCB{
     }
     
 }
-let nodes  = 200
+let nodes  = 1000
 let [G , delay , weightArray] = network.callNetwork(1,2,nodes,20,8)
 let rounds = [0,4,8,16,32,64,128,256,384,512]
 for(let i = 0 ; i<=128 ; i++){

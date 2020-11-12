@@ -151,7 +151,7 @@ class AlgUCB{
                         historyTable[key] = new Array();
                     }
                     historyTable[key].push( roundPerformanceTable[`${key}${r}`]);
-                    historyTable[key].sort(); 
+                    historyTable[key].sort(function(a, b){return Number(a) - Number(b)});
                     let len = historyTable[key].length
                     let value = historyTable[key][Math.floor(this.delayPercentage*len)];
                     let bound = this.c*Math.sqrt(Math.log(this.subRounds)/(2*len) );
