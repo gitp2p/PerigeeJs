@@ -251,6 +251,28 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
 
     return weightArray
   }
+
+  this.ReadWeights = function getReadWeightedMatrix(fn){
+    let weightArray = new Array(this.numNodes).fill(0);
+    let data = fs.readFileSync(fn,'utf8');
+    let i = 0 , j = 0;
+    let datalines = data.split("\n"); 
+    for(let line of datalines){
+      weightArray[i] = new Array(this.numNodes).fill(0);
+      let vals = line.split("  ");
+      for(val of vals){
+        weightArray[i][j] = val;
+        ++j;
+        if(j==1000)
+          break;
+      }
+      j = 0;
+      i++;
+      if(i==1000)
+          break;
+    }
+    return weightArray;
+  }
 }
   
 //Test purpose
@@ -275,7 +297,8 @@ G = obj.setNodesofGraph(nodes)
 //obj.setNodesofGraph("data1.json")
 const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
 let delay = obj.setNodeDelay()
-let weightArray = obj.WeigthedMatrix(nodes,nodesEdges); 
+//let weightArray = obj.WeigthedMatrix(nodes,nodesEdges); 
+let weightArray = obj.ReadWeights("weight1")
 G = obj.setWeightedEdges(G,outgoingNeighbours,delay,weightArray)
 return [G , delay , weightArray] ;
 }

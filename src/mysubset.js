@@ -84,7 +84,7 @@ class AlgSub{
                 this.broadcastNew(willBroadcastNodes[k],broadcastTime)
             }
         }
-     }
+    }
     //optimized broadcasting
 
     algSub(outDegreeLimit, GraphRet){
@@ -98,12 +98,12 @@ class AlgSub{
             if(broadCastNode >999){
                 console.log(broadCastNode);
             }
-            broadCastNode = r; //remove it from here
+            //broadCastNode = r; //remove it from here
             let BlockReciveTable = new Array(this.numNodes).fill(this.maxPathDelay);
             BlockReciveTable[broadCastNode] = 0 ;
 
             this.broadcastNew(broadCastNode,BlockReciveTable)
-            // store the minimum  refrence time for the node i .
+            // store the minimum  arriving time for the node i .
             for(let i = 0 ; i<this.numNodes;++i){
                 let outEdges = this.G.outEdges(i);
                 for(let edge of  outEdges){
@@ -246,7 +246,7 @@ class AlgSub{
             }
 
             if(flag1 ||  flag2 ||  flag3){
-                randNode = Math.floor(Math.random() * (this.numNodes - 1) )
+                randNode = Math.floor(Math.random() * (this.numNodes -1) )
                 flag1 = flag2 = flag3 = false;
             }
             else{
@@ -258,8 +258,8 @@ class AlgSub{
     }
     
 }
-let nodes  = 200
-let [G , delay , weightArray , Gnodes] = network.callNetwork(1,2,nodes,20,8)
+let nodes  = 1000
+let [G , delay , weightArray] = network.callNetwork(1,2,nodes,20,8)
 let rounds = [0,4,8,16,32,64,128,256,384,512]
 for(let i = 0 ; i<=128 ; i++){
     

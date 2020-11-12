@@ -1,7 +1,6 @@
 var Graph = require("graphlib").Graph;
 let tf = require('@tensorflow/tfjs-node')
 var fs    = require('fs')
-const con = require('../Data/data')
 const bitNodes = require('../Data/bitnodes.json')
 const delayJson = require('../Data/delays.json');
 const { count } = require("console");
@@ -17,25 +16,6 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
   this.setNodesofGraph = function (nodes){
     G = new Graph();
     this.G = G
-    /*
-    nodes = bitNodes["nodes"];
-    let i = 0;
-    m = 0
-    //change here
-    for(let key in nodes){
-      if(con[nodes[key][7]] != 'Null'){
-        label = nodes[key][7]
-        G.setNode(i, {
-          country:label,
-          cluster:con[label]
-        } );
-        ++i;
-      }
-
-    }
-    return G;
-    console.log(G._nodeCount)
-    */
    let i = 0;
     for(let node of nodes){
       G.setNode(i,node)

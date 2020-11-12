@@ -98,7 +98,7 @@ class AlgUCB{
                 let inLen = inKeys.length;
                 let self = this;
                 keys.forEach(function(key){
-                    //remove this and plot
+                    
                     let v = null;
                     if(outLen !=0 ){
                         v = OutNodesOFBrodcastNode[key].w;
@@ -178,61 +178,53 @@ class AlgUCB{
         }
         return historyTable
     }
-    // update after round need to change this.
-    setRandomConnections(node,index){
-        // random is never 1 
-         let randNode =  Math.floor(Math.random() * (this.numNodes - 1) )
-         let flag = false
-         let flag1 = false; // flags for  the conditions
-         let flag2 = false;
-         let flag3 = false;
-         Object.size = function(obj) {
-             var size = 0, key;
-             for (key in obj) {
-                 if (obj.hasOwnProperty(key)) size++;
-             }
-             return size;
-         };
-         while(true){
-             let inLimit = this.G.inEdges(randNode) 
-             let inLimitsize = inLimit.length//Object.size(inLimit);
-             if(flag==true){
-                 this.G.setEdge(node , randNode, {"weight":this.weightArray[node][randNode] , "index":index}  )
-                 break;
-             }
-           
-             let outlist = this.G.outEdges(node)
-             for(let k = 0 ; k < outlist.length; ++k){
-                 if(outlist[k].w == randNode){
-                     flag1 = true;
-                 }
-             }
- 
-             if(randNode === node){
-                 flag2=true;
-             }
- 
-             if(inLimitsize >= 20){
-                 flag3 = true;
-             }
- 
-             if(flag1 ||  flag2 ||  flag3){
-                 randNode = Math.floor(Math.random() * (this.numNodes - 1) )
-                 flag1 = flag2 = flag3 = false;
-             }
-             else{
-                 flag = true;
-             }
-           
-         }
-       
-     }
+
+    setRandomConnections(node){
+       // random is never 1 
+        let randNode = Math.floor(Math.random() * this.numNodes);
+        let flag = false
+        let flag1 = false; // flags for  the conditions
+        let flag2 = false;
+        let flag3 = false;
+        while(true){
+            let inLimit = this.G.inEdges(randNode).length 
+            if(flag==true){
+                this.G.setEdge(node , randNode, this.weightArray[node][randNode]   )
+                break;
+            }
+          
+            let outlist = this.G.outEdges(node)
+            for(let k = 0 ; k < outlist.length; ++k){
+                if(outlist[k].w == randNode){
+                    flag1 = true;
+                }
+            }
+
+            if(randNode == node){
+                flag2=true;
+            }
+
+            if(inLimit >= this.indegreeLimit){
+                flag3 = true;
+            }
+
+            if(flag1 ||  flag2 ||  flag3){
+                randNode = Math.floor(Math.random() * (this.numNodes - 1) )
+                flag1 = flag2 = flag3 = false;
+            }
+            else{
+                flag = true;
+            }
+          
+        }
+      
+    }
     
 }
-let nodes  = 1000
+let nodes  = 200
 let [G , delay , weightArray] = network.callNetwork(1,2,nodes,20,8)
 let rounds = [0,4,8,16,32,64,128,256,384,512]
-for(let i = 129 ; i<=512 ; i++){
+for(let i = 0 ; i<=128 ; i++){
     console.log(`running the round ${i}\n`)
     if(rounds.includes(i)){
         let graphJson = Graph.json.write(G);
@@ -261,7 +253,8 @@ for(let i = 129 ; i<=512 ; i++){
             return Number(Number(weightArray[i][j]) + nodeWeight1 + nodeWeight2);  
         }
         let allPairShortesPAths = Graph.alg.dijkstraAll(Gnew,weight );
-        let  graphNameShortest = `../../PerigeeJSHistoricalData/Data/UCBShortesPath/hash_ucbV1Round${i}.txt`
+        //let  graphNameShortest = `../../PerigeeJSHistoricalData/Data/UCBShortesPath/hash_ucbV1Round${i}.txt`
+        let  graphNameShortest = `../hash_ucbV1Round${i}.txt`
         //let allPairShortesPAthsJSON = JSON.parse(allPairShortesPAths);
         let distances = '';
         for(let i = 0 ;i<nodes;++i){
@@ -281,7 +274,7 @@ for(let i = 129 ; i<=512 ; i++){
     }
     let alg = new AlgUCB(G,delay,weightArray,100,100,nodes,8,.9,130)
     let historyTable = {}
-    historyTable = alg.algUcb(historyTable);    
+    historyTable = alg.algUcb(historyTable);      
 }
 
 /*
