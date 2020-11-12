@@ -14,7 +14,7 @@
                 "${workspaceFolder}/node_modules/**/*.js",
                 "!${workspaceFolder}/node_modules/math/**/*.js"
             ],
-            "program": "${workspaceFolder}\\src\\ucbAlgorithm.js"
+            "program": "${workspaceFolder}\\src\\UcbNew.js"
         }
     ]
 }

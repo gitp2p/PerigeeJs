@@ -228,20 +228,17 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
       }
       ++i;
     }
-    let weightDistance = ''
-    for(let i =0 ; i<this.numNodes;++i){
-      for(let j of weightArray[i]){
-        weightDistance = weightDistance.concat(`${j}  `)
-      }
-      weightDistance = weightDistance.concat('\n')
-    }
-    let graphNameShortest = "../graphWeights.txt"
-    fs.writeFile(graphNameShortest, weightDistance, (err) => {
-      if (err) {
-          throw err;
-      }
-      console.log("Data is saved.");
-    });
+    // let weightDistance = ''
+    // for(let i=0;i<this.numNodes;++i){
+    //   weightDistance+=weightArray[i].join("  ")
+    //   let test = weightDistance.split("  ")
+    //   weightDistance+="\n"
+    // }
+    
+    var file = fs.createWriteStream('graphWeights');
+    file.on('error', function(err) { /* error handling */ });
+    weightArray.forEach(function(v) { file.write(v.join('  ') + '\n'); }); 
+    file.end();
     return weightArray
   }
 
@@ -278,7 +275,7 @@ function Network(filedelay , networkType,numNodes,indegreeLimit,outDegree){
 //  const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
 //  let delay = obj.setNodeDelay()
 //  let weightArray = obj.WeigthedMatrix(nodes,nodesEdges); 
-//  obj.setWeightedEdges(G,outgoingNeighbours,delay,nodesEdges)
+ //obj.setWeightedEdges(G,outgoingNeighbours,delay,nodesEdges)
 
 
 
@@ -290,8 +287,8 @@ G = obj.setNodesofGraph(nodes)
 //obj.setNodesofGraph("data1.json")
 const  [outgoingNeighbours,incommingNodeLimit] = obj.setRandomConnection()
 let delay = obj.setNodeDelay()
-//let weightArray = obj.WeigthedMatrix(nodes,nodesEdges); 
-let weightArray = obj.ReadWeights("weight1")
+//let weightArray1 = obj.WeigthedMatrix(nodes,nodesEdges); 
+let weightArray = obj.ReadWeights("graphWeights")
 G = obj.setWeightedEdges(G,outgoingNeighbours,delay,weightArray)
 return [G , delay , weightArray ,nodes] ;
 }
