@@ -1,2 +1,9 @@
-node_modules
-Plotting
+node_modules/
+results/
+coverage/
+__pycache__/
+*.pyc
+.venv/
+.vs/
+.vscode/
+.DS_Store

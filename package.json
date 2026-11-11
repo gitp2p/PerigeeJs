@@ -1,18 +1,20 @@
 {
   "name": "perigee",
-  "version": "0.1.0",
-  "description": "P2P Simulation",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Reproducible peer-to-peer topology and propagation simulator",
   "author": "Wahid Gulzar <bwgate2018@gmail.com>",
-  "main": "network.js",
-  "scripts": {
-    "start": "node network.js"
+  "main": "src/index.js",
+  "bin": {
+    "perigee": "src/cli.js"
   },
-  "dependencies": {
-    "@dagrejs/graphlib": "^2.1.4",
-    "@tensorflow/tfjs": "^2.4.0",
-    "@tensorflow/tfjs-node": "^2.4.0",
-    "fetch": "^1.1.0",
-    "graphlib": "^2.1.8",
-    "node-fetch": "^2.6.1"
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "simulate": "node src/cli.js",
+    "test": "node --test",
+    "check": "node scripts/check-syntax.js"
   }
 }
